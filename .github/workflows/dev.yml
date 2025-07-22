@@ -1,0 +1,38 @@
+name: Deploy React to S3
+
+on:
+  push:
+    branches:
+      - main # main 브랜치에 push 시 배포
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build React app
+        run: npm run build
+
+      - name: Deploy to S3
+        # uses: jakejarvis/s3-sync-action@master
+        uses: jakejarvis/s3-sync-action@v0.5.1
+        with:
+          args: --delete # S3에서 제거된 파일도 삭제
+        env:
+          AWS_S3_BUCKET: steve-bucket-20250722
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ap-northeast-2 # 서울 리전 등
+          SOURCE_DIR: dist
